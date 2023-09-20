@@ -53,6 +53,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Check if ccache works with conan")
     parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true")
     parser.add_argument("PACKAGE", help="conan package used to run checks", type=Path)
+    parser.add_argument("VERSION", help="version of conan package", type=Path, default=None)
     args = parser.parse_args()
 
     try:
@@ -64,19 +65,21 @@ def main() -> None:
     stats_0 = read_stats()
     report_stats(stats_0)
 
-    check(f"conan create {args.PACKAGE} -s build_type=Release -o *:with_tests=True")
+    package = f"{args.PACKAGE} {args.VERSION}" if args.VERSION else args.PACKAGE
+
+    check(f"conan create {package} -s build_type=Release -o *:with_tests=True")
     stats_1 = read_stats()
     report_delta(stats_0, stats_1)
 
-    check(f"conan create {args.PACKAGE} -s build_type=Release -o *:with_tests=False")
+    check(f"conan create {package} -s build_type=Release -o *:with_tests=False")
     stats_2 = read_stats()
     report_delta(stats_1, stats_2)
 
-    check(f"conan create {args.PACKAGE} -s build_type=Debug -o *:with_tests=True")
+    check(f"conan create {package} -s build_type=Debug -o *:with_tests=True")
     stats_3 = read_stats()
     report_delta(stats_2, stats_3)
 
-    check(f"conan create {args.PACKAGE} -s build_type=Release -o *:with_tests=True")
+    check(f"conan create {package} -s build_type=Release -o *:with_tests=True")
     stats_4 = read_stats()
     report_delta(stats_3, stats_4)
 
